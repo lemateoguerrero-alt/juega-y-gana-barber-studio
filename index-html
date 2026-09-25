@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MAISON DU BARBER | Plataforma VIP de Juegos</title>
+  
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Montserrat:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --gold-1: #FFE5A3;
+      --gold-2: #D4AF37;
+      --gold-3: #AA820A;
+      --bg-dark: #070707;
+      --panel-dark: #121212;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #FFFFFF;
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .font-cinzel { font-family: 'Cinzel', serif; }
+
+    .gold-gradient-text {
+      background: linear-gradient(135deg, var(--gold-1) 0%, var(--gold-2) 50%, var(--gold-3) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .gold-card-border {
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(212, 175, 55, 0.05);
+    }
+
+    .gold-btn {
+      background: linear-gradient(135deg, #F3C663 0%, #D4AF37 50%, #AA820A 100%);
+      color: #000;
+      font-weight: 800;
+      border: none;
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+    }
+
+    .gold-btn:hover {
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.7);
+      transform: translateY(-2px) scale(1.01);
+    }
+
+    .gold-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Animación LED para Marco de la Ruleta */
+    .wheel-outer-ring {
+      border: 12px solid #1a1a1a;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.4), inset 0 0 20px rgba(0,0,0,0.9);
+      position: relative;
+    }
+
+    .wheel-pointer {
+      filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.8));
+      z-index: 30;
+    }
+
+    /* Efecto Raspa y Gana */
+    #scratchCanvas {
+      touch-action: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-yellow-500 selection:text-black">
+
+  <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+  <header class="w-full bg-black/90 backdrop-blur-md border-b border-yellow-500/30 py-3 px-5 fixed top-0 left-0 z-40 flex justify-between items-center">
+    <div class="flex items-center space-x-2.5 cursor-pointer" onclick="goToScreen('screen-home')">
+      <div class="w-8 h-8 rounded-full border border-yellow-500 flex items-center justify-center bg-neutral-900">
+        <i class="fa-solid fa-scissors text-yellow-500 text-sm"></i>
+      </div>
+      <div>
+        <span class="font-black text-base tracking-wider gold-gradient-text font-cinzel block leading-none">MAISON DU BARBER</span>
+        <span class="text-[9px] text-gray-400 tracking-widest uppercase font-semibold">Club VIP & Rewards</span>
+      </div>
+    </div>
+    <button onclick="openAdminModal()" class="text-[11px] text-yellow-400 bg-neutral-900/80 px-3 py-1.5 rounded-full border border-yellow-500/40 flex items-center gap-1.5 hover:bg-neutral-800 transition">
+      <i class="fa-solid fa-shield-halved"></i> Admin
+    </button>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="pt-20 pb-10 px-4 max-w-lg mx-auto w-full flex-grow flex flex-col justify-center">
+
+    <!-- PANTALLA 1: INICIO -->
+    <section id="screen-home" class="text-center py-6 space-y-6">
+      <div class="relative w-28 h-28 mx-auto">
+        <div class="absolute inset-0 rounded-full bg-yellow-500/20 blur-xl animate-pulse"></div>
+        <div class="relative w-28 h-28 rounded-full border-2 border-yellow-500 p-1 bg-neutral-950 flex items-center justify-center gold-card-border">
+          <i class="fa-solid fa-crown text-5xl gold-gradient-text"></i>
+        </div>
+      </div>
+      
+      <div>
+        <h1 class="text-3xl font-black gold-gradient-text font-cinzel tracking-tight">MAISON DU BARBER</h1>
+        <p class="text-xs tracking-[0.2em] text-gray-400 mt-1 uppercase font-semibold">💈 EXPERIENCIA EXCLUSIVA 💈</p>
+      </div>
+      
+      <div class="bg-neutral-900/80 border border-yellow-500/30 p-5 rounded-2xl text-xs text-gray-300 space-y-2 gold-card-border">
+        <p class="font-bold text-yellow-400 text-sm" id="homeWheelTitle">Cargando experiencia...</p>
+        <p id="homeWheelDesc" class="text-gray-400 leading-relaxed">Participa por cortes de cabello, servicios VIP y descuentos exclusivos en tu atención.</p>
+      </div>
+
+      <button onclick="goToScreen('screen-register')" class="w-full gold-btn py-4 rounded-2xl text-base tracking-wider font-extrabold flex items-center justify-center gap-3 uppercase">
+        <i class="fa-solid fa-play text-sm"></i> INGRESAR Y JUGAR
+      </button>
+    </section>
+
+    <!-- PANTALLA 2: REGISTRO CLIENTE -->
+    <section id="screen-register" class="hidden py-4">
+      <div class="bg-neutral-900/90 border border-yellow-500/40 p-6 rounded-3xl gold-card-border">
+        <h2 class="text-xl font-bold text-white mb-1 text-center font-cinzel">Registro de Cliente</h2>
+        <p class="text-xs text-gray-400 mb-6 text-center">Ingresa tus datos oficiales para validar tus giros y premios.</p>
+        
+        <form onsubmit="handleRegister(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs text-yellow-400 font-bold mb-1">Nombre Completo</label>
+            <input type="text" id="regName" required placeholder="Ej. Mateo Guerrero" class="w-full bg-black/80 border border-neutral-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-yellow-500 transition">
+          </div>
+          <div>
+            <label class="block text-xs text-yellow-400 font-bold mb-1">Número de WhatsApp</label>
+            <input type="tel" id="regPhone" required pattern="[0-9]{9,10}" placeholder="09XXXXXXXX" class="w-full bg-black/80 border border-neutral-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-yellow-500 transition">
+          </div>
+          <button type="submit" class="w-full gold-btn py-4 rounded-xl text-sm font-bold mt-2 uppercase tracking-wider">
+            CONTINUAR A LA EXPERIENCIA
+          </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3A: RULETA PROFESIONAL -->
+    <section id="screen-game-wheel" class="hidden text-center py-2 flex flex-col items-center">
+      <h2 class="text-2xl font-black gold-gradient-text font-cinzel" id="wheelGameTitle">Ruleta VIP</h2>
+      <p class="text-xs text-gray-400 mb-3">Toca el botón central o inferior para girar</p>
+
+      <div class="relative my-2">
+        <!-- Indicador Profesional -->
+        <div class="wheel-pointer absolute -top-4 left-1/2 -translate-x-1/2 text-yellow-500 text-3xl">
+          <i class="fa-solid fa-caret-down"></i>
+        </div>
+
+        <div class="wheel-outer-ring rounded-full p-2 bg-neutral-950">
+          <canvas id="wheelCanvas" width="320" height="320" class="rounded-full cursor-pointer"></canvas>
+        </div>
+      </div>
+
+      <button id="spinBtn" onclick="executeSpin()" class="w-full gold-btn py-4 rounded-2xl text-base font-extrabold mt-4 uppercase tracking-wider">
+        🎯 GIRAR RULETA
+      </button>
+    </section>
+
+    <!-- PANTALLA 3B: JUEGO RASPA Y GANA -->
+    <section id="screen-game-scratch" class="hidden text-center py-2 flex flex-col items-center">
+      <h2 class="text-2xl font-black gold-gradient-text font-cinzel mb-1">Raspa y Gana VIP</h2>
+      <p class="text-xs text-gray-400 mb-4">Mueve tu dedo o cursor sobre la tarjeta dorada para revelar tu premio</p>
+
+      <div class="relative w-72 h-44 rounded-2xl overflow-hidden border-2 border-yellow-500 gold-card-border">
+        <!-- Capa con el Premio Oculto -->
+        <div id="scratchPrizeBox" class="absolute inset-0 bg-neutral-950 flex flex-col items-center justify-center p-4">
+          <span class="text-xs text-yellow-400 font-bold uppercase tracking-widest">¡Tu Premio es!</span>
+          <span id="scratchPrizeText" class="text-xl font-black text-white my-1 gold-gradient-text">...</span>
+          <span class="text-[10px] text-gray-400">Muestra el código al finalizar</span>
+        </div>
+        <!-- Canvas para Raspar -->
+        <canvas id="scratchCanvas" width="288" height="176" class="absolute inset-0 z-10"></canvas>
+      </div>
+
+      <button id="scratchClaimBtn" onclick="finalizeGameResult()" class="hidden w-full gold-btn py-4 rounded-2xl text-sm font-extrabold mt-6 uppercase tracking-wider">
+        RECLAMAR PREMIO
+      </button>
+    </section>
+
+    <!-- PANTALLA 3C: JUEGO TRAGAMONEDAS (SLOTS) -->
+    <section id="screen-game-slots" class="hidden text-center py-2 flex flex-col items-center">
+      <h2 class="text-2xl font-black gold-gradient-text font-cinzel mb-1">Slots Barber Club</h2>
+      <p class="text-xs text-gray-400 mb-6">Presiona el botón para presenciar tu combinación ganadora</p>
+
+      <div class="w-full bg-neutral-950 border-2 border-yellow-500/60 p-6 rounded-3xl gold-card-border mb-6">
+        <div class="flex justify-center items-center gap-3">
+          <div id="slot1" class="w-20 h-24 bg-neutral-900 border border-yellow-500/40 rounded-xl flex items-center justify-center text-4xl font-bold">💈</div>
+          <div id="slot2" class="w-20 h-24 bg-neutral-900 border border-yellow-500/40 rounded-xl flex items-center justify-center text-4xl font-bold">✂️</div>
+          <div id="slot3" class="w-20 h-24 bg-neutral-900 border border-yellow-500/40 rounded-xl flex items-center justify-center text-4xl font-bold">👑</div>
+        </div>
+      </div>
+
+      <button id="slotSpinBtn" onclick="executeSlotSpin()" class="w-full gold-btn py-4 rounded-2xl text-base font-extrabold uppercase tracking-wider">
+        🎰 PROBAR SUERTE
+      </button>
+    </section>
+
+    <!-- PANTALLA 4: RESULTADO GANADOR -->
+    <section id="screen-result" class="hidden text-center py-4">
+      <div class="bg-neutral-900/90 border-2 border-yellow-500 p-6 rounded-3xl gold-card-border space-y-4">
+        <div class="w-16 h-16 bg-yellow-500/10 border border-yellow-500 rounded-full flex items-center justify-center mx-auto text-yellow-500 text-3xl">
+          👑
+        </div>
+        <h2 class="text-2xl font-black text-white font-cinzel">¡FELICIDADES!</h2>
+        <p class="text-xs text-gray-400">Has acreditado con éxito el premio:</p>
+        
+        <div class="py-3 bg-black/80 border-y border-yellow-500/40">
+          <p id="resultPrizeTitle" class="text-2xl font-black gold-gradient-text"></p>
+        </div>
+
+        <div class="bg-black/90 p-4 rounded-2xl border border-dashed border-yellow-500/50">
+          <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-1">Código Único de Validación</p>
+          <span id="resultCode" class="font-mono text-2xl font-extrabold text-white tracking-widest">MDB-2026-00000</span>
+        </div>
+
+        <p class="text-[11px] text-gray-400 leading-relaxed">Presenta este código en caja al momento de recibir tu servicio en Maison du Barber.</p>
+
+        <button onclick="sendWhatsAppClaim()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-2xl text-xs flex items-center justify-center gap-2 uppercase tracking-wider transition">
+          <i class="fa-brands fa-whatsapp text-lg"></i> ENVIAR VALIDACIÓN POR WHATSAPP
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 5: AGOTADO / SIN OPORTUNIDADES -->
+    <section id="screen-already" class="hidden text-center py-6">
+      <div class="bg-neutral-900/90 border border-yellow-500/40 p-6 rounded-3xl space-y-4 gold-card-border">
+        <div class="w-16 h-16 bg-red-500/10 border border-red-500/50 rounded-full flex items-center justify-center mx-auto text-red-400 text-2xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h2 class="text-xl font-bold text-yellow-400 font-cinzel">Oportunidades Agotadas</h2>
+        <p class="text-xs text-gray-300">Este número de WhatsApp ya participó en esta campaña activa.</p>
+
+        <div id="alreadyPrizeBox" class="p-4 bg-black/80 rounded-2xl text-xs text-left text-gray-300 border border-neutral-800 space-y-1.5 font-mono"></div>
+
+        <button onclick="goToScreen('screen-home')" class="w-full bg-neutral-800 hover:bg-neutral-700 text-white font-bold py-3.5 rounded-xl text-xs border border-neutral-700">
+          REGRESAR AL INICIO
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 6: ADMIN SUITE / PANEL DE CONTROL -->
+    <section id="screen-admin" class="hidden py-4">
+      <div id="adminAuthBox" class="bg-neutral-900 border border-yellow-500/40 p-6 rounded-3xl gold-card-border">
+        <h2 class="text-xl font-bold text-yellow-400 mb-1 font-cinzel">Acceso Administrador</h2>
+        <p class="text-xs text-gray-400 mb-5">Ingresa tus credenciales de gestión.</p>
+        <form onsubmit="handleAdminLogin(event)" class="space-y-4">
+          <input type="password" id="adminPasswordInput" placeholder="Contraseña de admin" required class="w-full bg-black/80 border border-neutral-800 rounded-xl px-4 py-3 text-white text-sm outline-none focus:border-yellow-500">
+          <button type="submit" class="w-full gold-btn py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider">ENTRAR AL PANEL MASTER</button>
+        </form>
+      </div>
+
+      <div id="adminPanelBox" class="hidden space-y-6">
+        <!-- Header del Panel -->
+        <div class="flex justify-between items-center border-b border-neutral-800 pb-4">
+          <div>
+            <h2 class="text-xl font-black text-yellow-400 font-cinzel">Panel de Control Master</h2>
+            <p class="text-[10px] text-gray-400">Gestión de campañas, mecánicas de juegos y stock</p>
+          </div>
+          <button onclick="closeAdmin()" class="bg-red-600/80 hover:bg-red-600 text-white text-xs px-3.5 py-2 rounded-xl font-bold">Cerrar Sesión</button>
+        </div>
+
+        <!-- METRICAS RÁPIDAS -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-neutral-900 p-3 rounded-2xl border border-neutral-800 text-center">
+            <span class="block text-[10px] text-gray-400 uppercase font-bold">Jugadas</span>
+            <span id="statTotalPlays" class="text-lg font-black text-yellow-400">0</span>
+          </div>
+          <div class="bg-neutral-900 p-3 rounded-2xl border border-neutral-800 text-center">
+            <span class="block text-[10px] text-gray-400 uppercase font-bold">Entregados</span>
+            <span id="statPrizesGiven" class="text-lg font-black text-green-400">0</span>
+          </div>
+          <div class="bg-neutral-900 p-3 rounded-2xl border border-neutral-800 text-center">
+            <span class="block text-[10px] text-gray-400 uppercase font-bold">Canjeados</span>
+            <span id="statRedeemed" class="text-lg font-black text-blue-400">0</span>
+          </div>
+        </div>
+
+        <!-- MÓDULO CANJE RÁPIDO DE CÓDIGOS -->
+        <div class="bg-neutral-900 p-4 rounded-2xl border border-yellow-500/30 space-y-2 gold-card-border">
+          <h3 class="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-2">
+            <i class="fa-solid fa-qrcode"></i> Validar & Canjear Código
+          </h3>
+          <div class="flex gap-2">
+            <input type="text" id="redeemCodeInput" placeholder="MDB-2026-XXXXX" class="bg-black/90 border border-neutral-800 px-3 py-2 text-xs rounded-xl w-full text-white font-mono uppercase outline-none focus:border-yellow-500">
+            <button onclick="redeemCodeAction()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 rounded-xl transition">CANJEAR</button>
+          </div>
+        </div>
+
+        <!-- MÓDULO DE JUEGOS Y CAMPAÑAS -->
+        <div class="bg-neutral-900 p-4 rounded-2xl border border-yellow-500/30 space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-gamepad"></i> Campañas & Mecánicas
+            </h3>
+            <button onclick="showWheelForm()" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-yellow-500/40">+ Nuevo Juego</button>
+          </div>
+
+          <!-- Formulario Crear Juego -->
+          <div id="wheelFormContainer" class="hidden bg-black/90 p-4 rounded-2xl border border-neutral-800 space-y-3 text-xs">
+            <div>
+              <label class="text-gray-400 block mb-1">Nombre de la Campaña:</label>
+              <input type="text" id="wheelNameInput" placeholder="Ej. Ruleta Fin de Semana" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 rounded-xl text-white">
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Tipo de Juego / Mecánica:</label>
+              <select id="wheelTypeInput" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 rounded-xl text-white">
+                <option value="WHEEL">🎯 Ruleta Interactiva VIP</option>
+                <option value="SCRATCH">🪙 Raspa y Gana</option>
+                <option value="SLOTS">🎰 Máquina Tragamonedas (Slots)</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Descripción para el Cliente:</label>
+              <input type="text" id="wheelDescInput" placeholder="Ej. Gira y gana descuentos en tu corte" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 rounded-xl text-white">
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Oportunidades por Número de WhatsApp:</label>
+              <input type="number" id="wheelOppsInput" min="1" max="10" value="1" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 rounded-xl text-white">
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button onclick="saveWheelAction()" class="gold-btn py-2 px-3 rounded-xl text-xs flex-1">Guardar Campaña</button>
+              <button onclick="hideWheelForm()" class="bg-neutral-800 text-gray-300 py-2 px-3 rounded-xl text-xs">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Lista de Juegos -->
+          <div class="space-y-2" id="wheelsListContainer"></div>
+        </div>
+
+        <!-- GESTIÓN DE PREMIOS -->
+        <div class="bg-neutral-900 p-4 rounded-2xl border border-yellow-500/30 space-y-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <h3 class="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-gift"></i> Premios de la Campaña
+              </h3>
+              <p class="text-[10px] text-gray-400" id="currentSelectedWheelLabel">Editando premios</p>
+            </div>
+            <button onclick="showAddPrizeForm()" class="bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-yellow-500/40">+ Agregar Premio</button>
+          </div>
+
+          <!-- Formulario Agregar Premio -->
+          <div id="prizeFormContainer" class="hidden bg-black/90 p-4 rounded-2xl border border-neutral-800 space-y-3 text-xs">
+            <div>
+              <label class="text-gray-400 block mb-1">Nombre del Premio:</label>
+              <input type="text" id="prizeNameInput" placeholder="Ej. Corte gratis o $2 Descuento" class="w-full bg-neutral-900 border border-neutral-800 p-2.5 rounded-xl text-white">
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="text-gray-400 block mb-1">Stock (Límite):</label>
+                <input type="number" id="prizeLimitInput" min="1" value="5" class="w-full bg-neutral-900 border border-neutral-800 p-2 rounded-xl text-white">
+              </div>
+              <div>
+                <label class="text-gray-400 block mb-1">Peso / Prob. (%):</label>
+                <input type="number" id="prizeProbInput" min="1" max="100" value="10" class="w-full bg-neutral-900 border border-neutral-800 p-2 rounded-xl text-white">
+              </div>
+              <div>
+                <label class="text-gray-400 block mb-1">Casillas Ruleta:</label>
+                <input type="number" id="prizeSlotsCountInput" min="1" max="5" value="1" title="Cuantas veces aparece en el círculo" class="w-full bg-neutral-900 border border-neutral-800 p-2 rounded-xl text-white">
+              </div>
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Color del Sector (Solo Ruleta):</label>
+              <input type="color" id="prizeColorInput" value="#D4AF37" class="w-full h-9 bg-neutral-900 border border-neutral-800 rounded-xl p-1">
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button onclick="savePrizeAction()" class="gold-btn py-2 px-3 rounded-xl text-xs flex-1">Guardar Premio</button>
+              <button onclick="hidePrizeForm()" class="bg-neutral-800 text-gray-300 py-2 px-3 rounded-xl text-xs">Cancelar</button>
+            </div>
+          </div>
+
+          <!-- Tabla de Premios -->
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-[11px] text-gray-300">
+              <thead>
+                <tr class="border-b border-neutral-800 text-yellow-500 font-bold">
+                  <th class="py-2">Premio</th>
+                  <th>Stock</th>
+                  <th>Prob.</th>
+                  <th>Casillas</th>
+                  <th>Estado</th>
+                  <th class="text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="adminPrizesTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- REGISTRO Y EXPORTACIÓN DE GANADORES -->
+        <div class="bg-neutral-900 p-4 rounded-2xl border border-yellow-500/30 space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="text-xs font-bold text-yellow-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="fa-solid fa-users"></i> Historial de Clientes
+            </h3>
+            <button onclick="exportToCSV()" class="bg-neutral-800 hover:bg-neutral-700 text-gray-200 text-[10px] font-bold px-3 py-1.5 rounded-xl border border-neutral-700">
+              📥 Exportar Excel (CSV)
+            </button>
+          </div>
+
+          <input type="text" id="searchPlaysInput" oninput="renderPlaysTable()" placeholder="🔍 Buscar por nombre, teléfono o código..." class="w-full bg-black/80 border border-neutral-800 p-2.5 rounded-xl text-xs text-white">
+
+          <div class="overflow-x-auto max-h-60 overflow-y-auto">
+            <table class="w-full text-left text-[11px] text-gray-300">
+              <thead class="sticky top-0 bg-neutral-900">
+                <tr class="border-b border-neutral-800 text-yellow-500 font-bold">
+                  <th class="py-2">Cliente / Teléfono</th>
+                  <th>Premio</th>
+                  <th>Código</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="adminPlaysTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- BASE DE DATOS Y ESTADO DE APLICACIÓN ---
+    const DEFAULT_CONFIG = { adminPassword: 'admin' };
+
+    const DEFAULT_WHEELS = [
+      {
+        id: 'w-default',
+        name: 'Ruleta Barber VIP',
+        type: 'WHEEL', // WHEEL, SCRATCH, SLOTS
+        description: 'Gira la ruleta exclusiva y obtén beneficios inmediatos para tu servicio.',
+        maxOpportunities: 1,
+        active: true
+      }
+    ];
+
+    const DEFAULT_PRIZES = [
+      { id: 'p1', wheelId: 'w-default', name: '💈 Corte Gratis', limit: 2, current: 0, prob: 5, slotsCount: 1, color: '#D4AF37' },
+      { id: 'p2', wheelId: 'w-default', name: '✂️ Cejas Gratis', limit: 5, current: 0, prob: 15, slotsCount: 2, color: '#1F1F1F' },
+      { id: 'p3', wheelId: 'w-default', name: '🧔 Barba Gratis', limit: 2, current: 0, prob: 10, slotsCount: 1, color: '#AA820A' },
+      { id: 'p4', wheelId: 'w-default', name: '💰 $1 Descuento', limit: 15, current: 0, prob: 35, slotsCount: 3, color: '#F3C663' },
+      { id: 'p5', wheelId: 'w-default', name: '💰 $2 Descuento', limit: 5, current: 0, prob: 15, slotsCount: 1, color: '#141414' },
+      { id: 'p6', wheelId: 'w-default', name: '🥤 Bebida Gratis', limit: 20, current: 0, prob: 20, slotsCount: 2, color: '#7D5D00' }
+    ];
+
+    let dbConfig = JSON.parse(localStorage.getItem('MDB_CONFIG')) || DEFAULT_CONFIG;
+    let dbWheels = JSON.parse(localStorage.getItem('MDB_WHEELS')) || DEFAULT_WHEELS;
+    let dbPrizes = JSON.parse(localStorage.getItem('MDB_PRIZES')) || DEFAULT_PRIZES;
+    let dbPlays = JSON.parse(localStorage.getItem('MDB_PLAYS')) || [];
+
+    let selectedAdminWheelId = dbWheels.find(w => w.active)?.id || dbWheels[0]?.id || 'w-default';
+    let currentClient = null;
+    let pendingWinningPrize = null;
+
+    // Variables de la Ruleta
+    let renderedWheelSectors = [];
+    let currentAngle = 0;
+    let isSpinning = false;
+
+    function saveState() {
+      localStorage.setItem('MDB_CONFIG', JSON.stringify(dbConfig));
+      localStorage.setItem('MDB_WHEELS', JSON.stringify(dbWheels));
+      localStorage.setItem('MDB_PRIZES', JSON.stringify(dbPrizes));
+      localStorage.setItem('MDB_PLAYS', JSON.stringify(dbPlays));
+    }
+
+    function getActiveWheel() {
+      return dbWheels.find(w => w.active) || dbWheels[0];
+    }
+
+    // --- NAVEGACIÓN ENTRE PANTALLAS ---
+    function goToScreen(id) {
+      ['screen-home', 'screen-register', 'screen-game-wheel', 'screen-game-scratch', 'screen-game-slots', 'screen-result', 'screen-already', 'screen-admin'].forEach(s => {
+        document.getElementById(s).classList.add('hidden');
+      });
+
+      document.getElementById(id).classList.remove('hidden');
+
+      const activeWheel = getActiveWheel();
+      if (activeWheel) {
+        document.getElementById('homeWheelTitle').innerText = activeWheel.name;
+        document.getElementById('homeWheelDesc').innerText = activeWheel.description;
+      }
+
+      if (id === 'screen-game-wheel') initWheelGame();
+      if (id === 'screen-game-scratch') initScratchGame();
+      if (id === 'screen-game-slots') initSlotGame();
+    }
+
+    // --- REGISTRO DEL CLIENTE ---
+    function handleRegister(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const activeWheel = getActiveWheel();
+
+      currentClient = { name, phone };
+
+      const clientPlays = dbPlays.filter(p => p.phone === phone && p.wheelId === activeWheel.id);
+      if (clientPlays.length >= (activeWheel.maxOpportunities || 1)) {
+        const lastPlay = clientPlays[clientPlays.length - 1];
+        document.getElementById('alreadyPrizeBox').innerHTML = `
+          <p><strong>Cliente:</strong> ${lastPlay.name}</p>
+          <p><strong>Premio:</strong> ${lastPlay.prizeName}</p>
+          <p><strong>Código:</strong> <span class="text-yellow-400 font-bold">${lastPlay.code}</span></p>
+          <p><strong>Estado:</strong> ${lastPlay.status}</p>
+        `;
+        goToScreen('screen-already');
+      } else {
+        // Enroque al tipo de juego configurado
+        if (activeWheel.type === 'SCRATCH') goToScreen('screen-game-scratch');
+        else if (activeWheel.type === 'SLOTS') goToScreen('screen-game-slots');
+        else goToScreen('screen-game-wheel');
+      }
+    }
+
+    // --- LÓGICA GENERAL DE SELECCIÓN DE PREMIO (PESO & PROBABILIDAD) ---
+    function selectWinningPrize() {
+      const activeWheel = getActiveWheel();
+      const availablePrizes = dbPrizes.filter(p => p.wheelId === activeWheel.id && p.current < p.limit);
+
+      if (availablePrizes.length === 0) return null;
+
+      let totalWeight = availablePrizes.reduce((sum, p) => sum + parseInt(p.prob), 0);
+      let randomNum = Math.floor(Math.random() * totalWeight);
+
+      for (let i = 0; i < availablePrizes.length; i++) {
+        if (randomNum < availablePrizes[i].prob) {
+          return availablePrizes[i];
+        }
+        randomNum -= availablePrizes[i].prob;
+      }
+      return availablePrizes[0];
+    }
+
+    // --- MECÁNICA 1: RULETA INTERACTIVA PROFESIONAL ---
+    function initWheelGame() {
+      const activeWheel = getActiveWheel();
+      document.getElementById('wheelGameTitle').innerText = activeWheel.name;
+
+      const availablePrizes = dbPrizes.filter(p => p.wheelId === activeWheel.id && p.current < p.limit);
+      
+      // Construir array expandido según 'slotsCount'
+      renderedWheelSectors = [];
+      availablePrizes.forEach(p => {
+        const count = p.slotsCount || 1;
+        for (let i = 0; i < count; i++) {
+          renderedWheelSectors.push(p);
+        }
+      });
+
+      // Mezclar sectores para estética uniforme
+      renderedWheelSectors.sort(() => Math.random() - 0.5);
+      drawWheel();
+    }
+
+    function drawWheel() {
+      const canvas = document.getElementById('wheelCanvas');
+      const ctx = canvas.getContext('2d');
+      const numSlices = renderedWheelSectors.length;
+
+      if (numSlices === 0) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 14px Montserrat";
+        ctx.textAlign = "center";
+        ctx.fillText("Premios agotados por hoy", canvas.width / 2, canvas.height / 2);
+        document.getElementById('spinBtn').disabled = true;
+        return;
+      }
+
+      document.getElementById('spinBtn').disabled = false;
+      const sliceAngle = (2 * Math.PI) / numSlices;
+      const radius = canvas.width / 2;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numSlices; i++) {
+        const angle = currentAngle + i * sliceAngle;
+        
+        ctx.beginPath();
+        ctx.fillStyle = renderedWheelSectors[i].color || '#D4AF37';
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius - 2, angle, angle + sliceAngle);
+        ctx.lineTo(radius, radius);
+        ctx.fill();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + sliceAngle / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#FFFFFF";
+        ctx.font = "bold 10px Montserrat";
+        ctx.fillText(renderedWheelSectors[i].name, radius - 15, 4);
+        ctx.restore();
+      }
+    }
+
+    function executeSpin() {
+      if (isSpinning || renderedWheelSectors.length === 0) return;
+      
+      const winningPrize = selectWinningPrize();
+      if (!winningPrize) return alert('No hay premios disponibles.');
+
+      isSpinning = true;
+      document.getElementById('spinBtn').disabled = true;
+
+      // Buscar un índice en los sectores dibujados que coincida con el premio elegido
+      const targetIndices = [];
+      renderedWheelSectors.forEach((sec, idx) => {
+        if (sec.id === winningPrize.id) targetIndices.push(idx);
+      });
+      const chosenSectorIndex = targetIndices[Math.floor(Math.random() * targetIndices.length)];
+
+      const numSlices = renderedWheelSectors.length;
+      const sliceAngle = (2 * Math.PI) / numSlices;
+      
+      // Ajuste de ángulo para que el puntero (arriba) señale la casilla correcta
+      const targetAngle = (8 * 2 * Math.PI) + (1.5 * Math.PI - (chosenSectorIndex * sliceAngle + sliceAngle / 2));
+
+      let startTime = null;
+      function animateWheel(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / 5000, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 4);
+
+        currentAngle = easeOut * targetAngle;
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+        } else {
+          isSpinning = false;
+          pendingWinningPrize = winningPrize;
+          finalizeGameResult();
+        }
+      }
+
+      requestAnimationFrame(animateWheel);
+    }
+
+    // --- MECÁNICA 2: RASPA Y GANA ---
+    function initScratchGame() {
+      const winningPrize = selectWinningPrize();
+      if (!winningPrize) return alert('No hay premios disponibles.');
+
+      pendingWinningPrize = winningPrize;
+      document.getElementById('scratchPrizeText').innerText = winningPrize.name;
+      document.getElementById('scratchClaimBtn').classList.add('hidden');
+
+      const canvas = document.getElementById('scratchCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#D4AF37';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 14px Montserrat';
+      ctx.textAlign = 'center';
+      ctx.fillText('✨ RASPA AQUÍ CON TU DEDO ✨', canvas.width / 2, canvas.height / 2);
+
+      let isScratching = false;
+
+      function scratch(e) {
+        if (!isScratching) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(x, y, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        document.getElementById('scratchClaimBtn').classList.remove('hidden');
+      }
+
+      canvas.onmousedown = () => isScratching = true;
+      canvas.onmouseup = () => isScratching = false;
+      canvas.onmousemove = scratch;
+
+      canvas.ontouchstart = () => isScratching = true;
+      canvas.ontouchend = () => isScratching = false;
+      canvas.ontouchmove = scratch;
+    }
+
+    // --- MECÁNICA 3: SLOTS / TRAGAMONEDAS ---
+    function initSlotGame() {
+      document.getElementById('slot1').innerText = '💈';
+      document.getElementById('slot2').innerText = '✂️';
+      document.getElementById('slot3').innerText = '👑';
+      document.getElementById('slotSpinBtn').disabled = false;
+    }
+
+    function executeSlotSpin() {
+      const winningPrize = selectWinningPrize();
+      if (!winningPrize) return alert('No hay premios disponibles.');
+
+      pendingWinningPrize = winningPrize;
+      document.getElementById('slotSpinBtn').disabled = true;
+
+      const icons = ['💈', '✂️', '👑', '🧔', '💰', '🍭'];
+      let ticks = 0;
+
+      const interval = setInterval(() => {
+        document.getElementById('slot1').innerText = icons[Math.floor(Math.random() * icons.length)];
+        document.getElementById('slot2').innerText = icons[Math.floor(Math.random() * icons.length)];
+        document.getElementById('slot3').innerText = icons[Math.floor(Math.random() * icons.length)];
+        ticks++;
+
+        if (ticks > 20) {
+          clearInterval(interval);
+          document.getElementById('slot1').innerText = '👑';
+          document.getElementById('slot2').innerText = '👑';
+          document.getElementById('slot3').innerText = '👑';
+          setTimeout(finalizeGameResult, 600);
+        }
+      }, 100);
+    }
+
+    // --- REGISTRO Y ENTREGA DE PREMIO FINAL ---
+    function finalizeGameResult() {
+      const prize = pendingWinningPrize;
+      const activeWheel = getActiveWheel();
+
+      const targetPrize = dbPrizes.find(p => p.id === prize.id);
+      if (targetPrize) targetPrize.current++;
+
+      const uniqueCode = 'MDB-2026-' + Math.floor(10000 + Math.random() * 90000);
+
+      const newPlay = {
+        wheelId: activeWheel.id,
+        name: currentClient.name,
+        phone: currentClient.phone,
+        prizeId: prize.id,
+        prizeName: prize.name,
+        code: uniqueCode,
+        status: 'PENDIENTE',
+        date: new Date().toLocaleString()
+      };
+
+      dbPlays.push(newPlay);
+      saveState();
+
+      document.getElementById('resultPrizeTitle').innerText = prize.name;
+      document.getElementById('resultCode').innerText = uniqueCode;
+      
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+      goToScreen('screen-result');
+    }
+
+    function sendWhatsAppClaim() {
+      const code = document.getElementById('resultCode').innerText;
+      const prize = document.getElementById('resultPrizeTitle').innerText;
+      const text = encodeURIComponent(`Hola MAISON DU BARBER 👋 Soy ${currentClient.name}. Acabo de ganar el premio: ${prize}. Mi código único de canje es: ${code}.`);
+      window.open(`https://wa.me/593962114263?text=${text}`, '_blank');
+    }
+
+    // --- PANEL DE CONTROL ADMINISTRATIVO ---
+    function openAdminModal() { goToScreen('screen-admin'); }
+
+    function handleAdminLogin(e) {
+      e.preventDefault();
+      if (document.getElementById('adminPasswordInput').value === dbConfig.adminPassword) {
+        document.getElementById('adminAuthBox').classList.add('hidden');
+        document.getElementById('adminPanelBox').classList.remove('hidden');
+        loadAdminDashboard();
+      } else {
+        alert('Contraseña incorrecta');
+      }
+    }
+
+    function closeAdmin() {
+      document.getElementById('adminAuthBox').classList.remove('hidden');
+      document.getElementById('adminPanelBox').classList.add('hidden');
+      document.getElementById('adminPasswordInput').value = '';
+      goToScreen('screen-home');
+    }
+
+    function loadAdminDashboard() {
+      // Metricas
+      document.getElementById('statTotalPlays').innerText = dbPlays.length;
+      document.getElementById('statPrizesGiven').innerText = dbPlays.length;
+      document.getElementById('statRedeemed').innerText = dbPlays.filter(p => p.status === 'CANJEADO').length;
+
+      renderWheelsList();
+      renderPrizesTable();
+      renderPlaysTable();
+    }
+
+    // CAMPAÑAS Y JUEGOS
+    function showWheelForm() { document.getElementById('wheelFormContainer').classList.remove('hidden'); }
+    function hideWheelForm() { document.getElementById('wheelFormContainer').classList.add('hidden'); }
+
+    function saveWheelAction() {
+      const name = document.getElementById('wheelNameInput').value.trim();
+      const type = document.getElementById('wheelTypeInput').value;
+      const description = document.getElementById('wheelDescInput').value.trim();
+      const maxOpportunities = parseInt(document.getElementById('wheelOppsInput').value) || 1;
+
+      if (!name) return alert('Ingresa un nombre para el juego');
+
+      const newWheel = {
+        id: 'w-' + Date.now(),
+        name,
+        type,
+        description: description || 'Promoción exclusiva en MAISON DU BARBER',
+        maxOpportunities,
+        active: dbWheels.length === 0
+      };
+
+      dbWheels.push(newWheel);
+      if (!selectedAdminWheelId) selectedAdminWheelId = newWheel.id;
+
+      saveState();
+      hideWheelForm();
+      loadAdminDashboard();
+    }
+
+    function setWheelActive(id) {
+      dbWheels.forEach(w => w.active = (w.id === id));
+      selectedAdminWheelId = id;
+      saveState();
+      loadAdminDashboard();
+    }
+
+    function deleteWheelAction(id) {
+      if (dbWheels.length <= 1) return alert('Debes conservar al menos una campaña.');
+      if (confirm('¿Eliminar esta campaña y sus premios?')) {
+        dbWheels = dbWheels.filter(w => w.id !== id);
+        dbPrizes = dbPrizes.filter(p => p.wheelId !== id);
+        if (!dbWheels.some(w => w.active)) dbWheels[0].active = true;
+        selectedAdminWheelId = dbWheels[0].id;
+        saveState();
+        loadAdminDashboard();
+      }
+    }
+
+    function renderWheelsList() {
+      const container = document.getElementById('wheelsListContainer');
+      container.innerHTML = '';
+
+      dbWheels.forEach(w => {
+        const isSelected = w.id === selectedAdminWheelId;
+        let typeBadge = '🎯 Ruleta';
+        if (w.type === 'SCRATCH') typeBadge = '🪙 Raspa y Gana';
+        if (w.type === 'SLOTS') typeBadge = '🎰 Slots';
+
+        container.innerHTML += `
+          <div class="p-3 rounded-2xl border ${isSelected ? 'border-yellow-500 bg-black' : 'border-neutral-800 bg-neutral-900'} flex items-center justify-between text-xs">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-white">${w.name}</span>
+                <span class="bg-neutral-800 text-yellow-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-yellow-500/20">${typeBadge}</span>
+                ${w.active ? '<span class="bg-emerald-500/20 text-emerald-400 text-[9px] px-2 py-0.5 rounded-full font-bold">ACTIVO</span>' : ''}
+              </div>
+              <p class="text-[10px] text-gray-400 mt-0.5">${w.description}</p>
+            </div>
+            <div class="flex items-center gap-1.5">
+              ${!w.active ? `<button onclick="setWheelActive('${w.id}')" class="bg-yellow-500/20 text-yellow-400 text-[10px] px-2.5 py-1 rounded-xl">Activar</button>` : ''}
+              <button onclick="selectedAdminWheelId='${w.id}'; loadAdminDashboard();" class="bg-neutral-800 text-gray-300 text-[10px] px-2.5 py-1 rounded-xl border border-neutral-700">Premios</button>
+              <button onclick="deleteWheelAction('${w.id}')" class="text-red-400 hover:text-red-300 px-1">🗑️</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // PREMIOS
+    function showAddPrizeForm() { document.getElementById('prizeFormContainer').classList.remove('hidden'); }
+    function hidePrizeForm() { document.getElementById('prizeFormContainer').classList.add('hidden'); }
+
+    function savePrizeAction() {
+      const name = document.getElementById('prizeNameInput').value.trim();
+      const limit = parseInt(document.getElementById('prizeLimitInput').value);
+      const prob = parseInt(document.getElementById('prizeProbInput').value);
+      const slotsCount = parseInt(document.getElementById('prizeSlotsCountInput').value) || 1;
+      const color = document.getElementById('prizeColorInput').value;
+
+      if (!name) return alert('Ingresa un nombre para el premio');
+
+      const newPrize = {
+        id: 'p-' + Date.now(),
+        wheelId: selectedAdminWheelId,
+        name,
+        limit,
+        current: 0,
+        prob,
+        slotsCount,
+        color
+      };
+
+      dbPrizes.push(newPrize);
+      saveState();
+      hidePrizeForm();
+      loadAdminDashboard();
+    }
+
+    function deletePrizeAction(id) {
+      if (confirm('¿Eliminar este premio?')) {
+        dbPrizes = dbPrizes.filter(p => p.id !== id);
+        saveState();
+        loadAdminDashboard();
+      }
+    }
+
+    function renderPrizesTable() {
+      const currentWheel = dbWheels.find(w => w.id === selectedAdminWheelId) || dbWheels[0];
+      document.getElementById('currentSelectedWheelLabel').innerText = `Mostrando premios para: ${currentWheel ? currentWheel.name : ''}`;
+
+      const prizesTbody = document.getElementById('adminPrizesTable');
+      prizesTbody.innerHTML = '';
+
+      dbPrizes.filter(p => p.wheelId === selectedAdminWheelId).forEach(p => {
+        const isAgotado = p.current >= p.limit;
+        prizesTbody.innerHTML += `
+          <tr class="border-b border-neutral-800">
+            <td class="py-2.5 font-semibold text-white">${p.name}</td>
+            <td>${p.current}/${p.limit}</td>
+            <td>${p.prob}%</td>
+            <td>${p.slotsCount || 1}</td>
+            <td>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${isAgotado ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}">
+                ${isAgotado ? 'AGOTADO' : 'DISPONIBLE'}
+              </span>
+            </td>
+            <td class="text-right">
+              <button onclick="deletePrizeAction('${p.id}')" class="text-red-400 hover:text-red-300">🗑️</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // REGISTRO DE HISTORIAL Y CANJE
+    function renderPlaysTable() {
+      const playsTbody = document.getElementById('adminPlaysTable');
+      const filterText = (document.getElementById('searchPlaysInput')?.value || '').toLowerCase();
+      playsTbody.innerHTML = '';
+
+      dbPlays.slice().reverse().filter(pl => 
+        pl.name.toLowerCase().includes(filterText) ||
+        pl.phone.includes(filterText) ||
+        pl.code.toLowerCase().includes(filterText)
+      ).forEach(pl => {
+        playsTbody.innerHTML += `
+          <tr class="border-b border-neutral-800">
+            <td class="py-2">${pl.name}<br><span class="text-[9px] text-gray-500 font-mono">${pl.phone}</span></td>
+            <td>${pl.prizeName}</td>
+            <td class="font-mono text-yellow-400 font-bold">${pl.code}</td>
+            <td>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${pl.status === 'CANJEADO' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}">
+                ${pl.status}
+              </span>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function redeemCodeAction() {
+      const codeInput = document.getElementById('redeemCodeInput').value.trim().toUpperCase();
+      if (!codeInput) return;
+
+      const play = dbPlays.find(p => p.code === codeInput);
+      if (!play) return alert('Código no válido o inexistente.');
+      if (play.status === 'CANJEADO') return alert('Este código YA fue canjeado previamente.');
+
+      play.status = 'CANJEADO';
+      saveState();
+      alert(`✅ ¡Premio validado y canjeado con éxito para ${play.name}!`);
+      document.getElementById('redeemCodeInput').value = '';
+      loadAdminDashboard();
+    }
+
+    function exportToCSV() {
+      if (dbPlays.length === 0) return alert('No hay datos registrados para exportar.');
+      let csvContent = "data:text/csv;charset=utf-8,Cliente,Telefono,Premio,Codigo,Estado,Fecha\n";
+      dbPlays.forEach(p => {
+        csvContent += `"${p.name}","${p.phone}","${p.prizeName}","${p.code}","${p.status}","${p.date}"\n`;
+      });
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Clientes_MaisonDuBarber_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
